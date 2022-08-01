@@ -1,24 +1,31 @@
 # bot.py
 import os
+import random
+from dotenv import load_dotenv
 
 import discord
-from dotenv import load_dotenv
+from discord.ext import commands
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
 
-@client.event
+bot = commands.Bot(command_prefix='m!', intents=intents)
+
+@bot.event
 async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+    print(f'{bot.user.name} has connected to Discord!')
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    
-    if message.content == "m!hello":
-        await message.channel.send("hello!")
+initial_extensions = []
 
-client.run(TOKEN)
+for filename in os.listdir('./cogs'):
+    if filename.endswith('.py'):
+        initial_extensions.append("cogs." + filename[:-3])
+
+if __name__ == '__main__':
+    for extension in initial_extensions:
+        bot.load_extension(extension)
+
+bot.run(TOKEN)
